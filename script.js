@@ -1,9 +1,4 @@
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { db } from "./firebase.js";
-
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Setup Star Ratings
     const ratingContainers = document.querySelectorAll('.star-rating');
     const surveyData = {
         ratings: {
@@ -14,41 +9,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Setup Star Ratings
     ratingContainers.forEach(container => {
-        // Create 5 stars per container
-        // We do it in reverse order because of the RTL CSS trick
         for (let i = 5; i >= 1; i--) {
             const star = document.createElement('span');
             star.innerHTML = '★';
             star.classList.add('star');
             star.dataset.value = i;
-            
-            star.addEventListener('click', function() {
-                // Remove selected class from all siblings
+            star.addEventListener('click', function () {
                 const siblings = Array.from(container.children);
                 siblings.forEach(s => s.classList.remove('selected'));
-                
-                // Add selected class to chosen star
                 this.classList.add('selected');
-                
-                // Update survey data
                 const category = container.dataset.name;
                 surveyData.ratings[category] = parseInt(this.dataset.value);
             });
-            
             container.appendChild(star);
         }
     });
 
-    // 2. Handle Form Submission
     const form = document.getElementById('surveyForm');
     const successMessage = document.getElementById('successMessage');
     const resetBtn = document.getElementById('resetBtn');
 
+    // Handle Form Submission to Neon via Vercel API
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Collect text/number inputs
+
         const formData = new FormData(form);
         const submitData = {
             ...surveyData.ratings,
@@ -61,46 +47,38 @@ document.addEventListener('DOMContentLoaded', () => {
             timestamp: new Date().toISOString()
         };
 
-        // Here, we would normally send to a database (e.g., Firebase)
-        console.log("Submitting the following survey data to Database:", submitData);
-        
-        // Change button to loading state
         const submitBtn = form.querySelector('.submit-btn');
         const originalBtnHtml = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span>Submitting...</span>';
         submitBtn.disabled = true;
 
-        // Send to Firebase
         try {
-            await addDoc(collection(db, "surveys"), submitData);
-            
-            // Hide form, show success
+            const response = await fetch('/api/submit-survey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submitData)
+            });
+
+            if (!response.ok) throw new Error('Database error');
+
             form.classList.add('hidden');
             successMessage.classList.remove('hidden');
         } catch (error) {
-            console.error("Firebase error: ", error);
-            alert("Error submitting to Firebase. Did you add your config to firebase.js?");
+            console.error("Submission Error:", error);
+            alert("Error saving to database. Check Vercel Environment Variables.");
         } finally {
-            // Restore button
             submitBtn.innerHTML = originalBtnHtml;
             submitBtn.disabled = false;
         }
     });
 
-    // 3. Reset form logic
+    // Reset form logic
     resetBtn.addEventListener('click', () => {
         form.reset();
-        
-        // Reset stars
         ratingContainers.forEach(container => {
             Array.from(container.children).forEach(s => s.classList.remove('selected'));
         });
-        
-        // Reset surveyData
-        Object.keys(surveyData.ratings).forEach(key => {
-            surveyData.ratings[key] = 0;
-        });
-
+        Object.keys(surveyData.ratings).forEach(key => surveyData.ratings[key] = 0);
         successMessage.classList.add('hidden');
         form.classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
