@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Das Residency - Admin Dashboard</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        .survey-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .survey-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .data-point {
+            background: rgba(0,0,0,0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+        }
+        .data-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+        }
+        .data-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .comments {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-style: italic;
+        }
+        .nav-links {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .nav-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="survey-container dashboard-container">
+        <div class="survey-header">
+            <div class="logo-placeholder">DR</div>
+            <h1>Admin Dashboard</h1>
+            <p>View all submitted customer feedback below</p>
+            
+            <div style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--primary); max-width: 300px; margin-left: auto; margin-right: auto;">
+                <p style="margin-bottom: 0.5rem; color: var(--primary); font-weight: 600;">Customer Scan Code</p>
+                <img id="qr-code-img" src="" alt="QR Code" style="background: white; padding: 10px; border-radius: 8px; width: 150px; height: 150px;" />
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-secondary);">Ask customers to scan to open survey</p>
+            </div>
+        </div>
+        
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                const surveyUrl = window.location.origin + "/index.html";
+                document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(surveyUrl)}`;
+            });
+        </script>
+
+        <div id="surveyList">
+            <!-- Surveys will be injected here via JS -->
+        </div>
+
+        <div class="nav-links">
+            <a href="/">← Back to Survey Form</a>
+            <br><br>
+            <button id="clearDataBtn" class="outline-btn" style="border-color: var(--error); color: var(--error);">Clear All Data</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { collection, getDocs, query, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { db } from "./firebase.js";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const surveyList = document.getElementById('surveyList');
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            
+            async function loadSurveys() {
+                try {
+                    const q = query(collection(db, "surveys"));
+                    const querySnapshot = await getDocs(q);
+                    let existingSurveys = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Sort descending by timestamp assuming format is standard ISO
+                    existingSurveys.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    
+                    if (existingSurveys.length === 0) {
+                        surveyList.innerHTML = '<div class="empty-state">No surveys submitted yet. Go to the survey page to submit one!</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    existingSurveys.forEach((survey, index) => {
+                        const date = new Date(survey.timestamp).toLocaleString();
+                        html += `
+                            <div class="survey-card">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                    <h3>Survey ID #${survey.id}</h3>
+                                    <span style="color: var(--text-secondary); font-size: 0.9rem;">${date}</span>
+                                </div>
+                                
+                                <div class="survey-grid">
+                                    <div class="data-point">
+                                        <div class="data-label">Room Number</div>
+                                        <div class="data-value">${survey.roomNumber || 'N/A'}</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Cleanliness</div>
+                                        <div class="data-value">${survey.cleanliness} / 5 ★</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Hygiene</div>
+                                        <div class="data-value">${survey.hygiene} / 5 ★</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Manager Behaviour</div>
+                                        <div class="data-value">${survey.managerBehaviour} / 5 ★</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Room Boy Behaviour</div>
+                                        <div class="data-value">${survey.roomBoyBehaviour} / 5 ★</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Amount Paid</div>
+                                        <div class="data-value">₹${survey.amountPaid}</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Payment Type</div>
+                                        <div class="data-value">${survey.paymentType}</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Room Rent</div>
+                                        <div class="data-value">₹${survey.roomRent || 'N/A'}</div>
+                                    </div>
+                                    <div class="data-point">
+                                        <div class="data-label">Extra Charges</div>
+                                        <div class="data-value">${survey.extraCharges || 'None'}</div>
+                                    </div>
+                                </div>
+                                
+                                ${survey.suggestions ? `
+                                    <div class="comments">
+                                        <div class="data-label">Suggestions / Comments</div>
+                                        <div>"${survey.suggestions}"</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    surveyList.innerHTML = html;
+                } catch (error) {
+                    surveyList.innerHTML = '<div class="empty-state" style="color: var(--error)">Error connecting to database. Is the server running?</div>';
+                }
+            }
+
+            loadSurveys();
+
+            clearDataBtn.addEventListener('click', async () => {
+                if(confirm('Are you sure you want to delete all saved survey data from Firebase?')) {
+                    const btnHtml = clearDataBtn.innerHTML;
+                    clearDataBtn.innerHTML = 'Deleting...';
+                    try {
+                        const querySnapshot = await getDocs(collection(db, "surveys"));
+                        const deletePromises = querySnapshot.docs.map(document => deleteDoc(doc(db, "surveys", document.id)));
+                        await Promise.all(deletePromises);
+                        loadSurveys();
+                    } catch (error) {
+                        alert("Failed to clear Firebase collection.");
+                    } finally {
+                        clearDataBtn.innerHTML = btnHtml;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

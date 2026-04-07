@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Das Residency - Customer Feedback</title>
+    <meta name="description" content="Customer feedback and survey form for Das Residency lodge.">
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="survey-container">
+        <div class="survey-header">
+            <div class="logo-placeholder">DR</div>
+            <h1>Das Residency</h1>
+            <p>We value your feedback. Please let us know about your stay so we can improve our services.</p>
+        </div>
+        
+        <form id="surveyForm" class="survey-form">
+            <!-- Section 1: Ratings -->
+            <div class="form-section">
+                <h2>Rate Your Experience</h2>
+                <div class="section-divider"></div>
+                
+                <div class="rating-group">
+                    <div class="label-col">
+                        <label>Cleanliness</label>
+                        <p class="sub-label">How clean was your room?</p>
+                    </div>
+                    <div class="star-rating" data-name="cleanliness"></div>
+                </div>
+
+                <div class="rating-group">
+                    <div class="label-col">
+                        <label>Hygiene</label>
+                        <p class="sub-label">Overall hygiene of the lodge</p>
+                    </div>
+                    <div class="star-rating" data-name="hygiene"></div>
+                </div>
+
+                <div class="rating-group">
+                    <div class="label-col">
+                        <label>Manager Behaviour</label>
+                        <p class="sub-label">Interaction with our managers</p>
+                    </div>
+                    <div class="star-rating" data-name="managerBehaviour"></div>
+                </div>
+
+                <div class="rating-group">
+                    <div class="label-col">
+                        <label>Room Boy Behaviour</label>
+                        <p class="sub-label">Service provided by room boys</p>
+                    </div>
+                    <div class="star-rating" data-name="roomBoyBehaviour"></div>
+                </div>
+            </div>
+
+            <!-- Section 2: Stay Details -->
+            <div class="form-section">
+                <h2>Stay Details</h2>
+                <div class="section-divider"></div>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="roomNumber">Room Number</label>
+                        <input type="text" id="roomNumber" name="roomNumber" placeholder="e.g., 101" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="roomRent">Room Rent</label>
+                        <input type="number" id="roomRent" name="roomRent" placeholder="Enter Room Rent" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="amountPaid">Total Amount Paid (₹)</label>
+                        <input type="number" id="amountPaid" name="amountPaid" placeholder="Enter amount" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="extraCharges">Extra Charges (if any)</label>
+                        <input type="text" id="extraCharges" name="extraCharges" placeholder="e.g., Extra bed, food">
+                    </div>
+                </div>
+
+                <div class="input-group full-width mt-4">
+                    <label>Payment Type</label>
+                    <div class="radio-group">
+                        <label class="radio-card">
+                            <input type="radio" name="paymentType" value="Cash" required>
+                            <span class="card-content">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2z"></path><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg>
+                                Cash
+                            </span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="paymentType" value="PhonePe">
+                            <span class="card-content">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                                PhonePe / UPI
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Feedback -->
+            <div class="form-section">
+                <h2>Additional Comments</h2>
+                <div class="section-divider"></div>
+                <div class="input-group full-width">
+                    <label for="suggestions">Any suggestions to improve?</label>
+                    <textarea id="suggestions" name="suggestions" rows="4" placeholder="Your suggestions are valuable to us..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span>Submit Feedback</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+            </button>
+        </form>
+        
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden success-message">
+            <div class="success-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>
+            </div>
+            <h2>Thank You!</h2>
+            <p>Your feedback has been submitted successfully to our database.</p>
+            <button id="resetBtn" class="outline-btn">Submit Another Form</button>
+        </div>
+    </div>
+    
+    <!-- Firebase SDKs (using v9 modular/compat for easy DB hookup) -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
