@@ -112,15 +112,12 @@
     </div>
 
     <script type="module">
-        // 1. Remove Firebase imports
-        // import { ... } from "...firebase-firestore.js";
-
         document.addEventListener('DOMContentLoaded', () => {
             const surveyList = document.getElementById('surveyList');
 
             async function loadSurveys() {
                 try {
-                    // CHANGE: Fetch from your own API
+                    // Fetching from your Vercel/Neon API
                     const response = await fetch('/api/get-surveys');
                     const result = await response.json();
                     const existingSurveys = result.data || [];
@@ -130,23 +127,81 @@
                         return;
                     }
 
-                    // The rest of your HTML building logic remains the same...
                     let html = '';
                     existingSurveys.forEach((survey) => {
-                        const date = new Date(survey.timestamp).toLocaleString();
+                        // Format the timestamp for better readability
+                        const date = new Date(survey.timestamp).toLocaleString('en-IN', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                        });
+
                         html += `
                     <div class="survey-card">
-                        <h3>Survey Room #${survey.roomnumber}</h3>
-                        <p>Cleanliness: ${survey.cleanliness} / 5</p>
-                        <p>Comments: ${survey.suggestions || 'None'}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                            <h3 style="margin: 0; color: var(--primary);">Room #${survey.roomnumber || 'N/A'}</h3>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">${date}</span>
+                        </div>
+
+                        <div class="survey-grid">
+                            <div class="data-point">
+                                <div class="data-label">Cleanliness</div>
+                                <div class="data-value">${survey.cleanliness} / 5</div>
+                            </div>
+                            <div class="data-point">
+                                <div class="data-label">Hygiene</div>
+                                <div class="data-value">${survey.hygiene} / 5</div>
+                            </div>
+                            <div class="data-point">
+                                <div class="data-label">Manager Behaviour</div>
+                                <div class="data-value">${survey.managerbehaviour} / 5</div>
+                            </div>
+                            <div class="data-point">
+                                <div class="data-label">Room Boy Behaviour</div>
+                                <div class="data-value">${survey.roomboybehaviour} / 5</div>
+                            </div>
+                        </div>
+
+                        <div class="survey-grid" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                            <div class="data-point">
+                                <div class="data-label">Rent Paid</div>
+                                <div class="data-value">₹${survey.roomrent}</div>
+                            </div>
+                            <div class="data-point">
+                                <div class="data-label">Amount Received</div>
+                                <div class="data-value">₹${survey.amountpaid}</div>
+                            </div>
+                            <div class="data-point">
+                                <div class="data-label">Payment Method</div>
+                                <div class="data-value" style="text-transform: uppercase;">${survey.paymenttype}</div>
+                            </div>
+                             <div class="data-point">
+                                <div class="data-label">Extra Charges</div>
+                                <div class="data-value">${survey.extracharges || 'None'}</div>
+                            </div>
+                        </div>
+
+                        <div class="comments">
+                            <div class="data-label" style="font-style: normal; margin-bottom: 0.5rem;">Guest Suggestions:</div>
+                            "${survey.suggestions || 'No suggestions provided.'}"
+                        </div>
                     </div>`;
                     });
+
                     surveyList.innerHTML = html;
                 } catch (error) {
-                    surveyList.innerHTML = '<div class="empty-state">Error loading data.</div>';
+                    console.error("Dashboard Load Error:", error);
+                    surveyList.innerHTML = '<div class="empty-state">Error loading data from Neon. Check browser console.</div>';
                 }
             }
+
             loadSurveys();
+
+            // Optional: Clear Data button logic (Requires a DELETE API route to be safe)
+            document.getElementById('clearDataBtn').addEventListener('click', () => {
+                if (confirm("To delete data, you should manage it directly in the Neon Console for security. Proceed anyway?")) {
+                    alert("Please use the Neon Dashboard to drop/truncate the table for safety.");
+                }
+            });
         });
     </script>
 </body>
