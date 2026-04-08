@@ -39,10 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitData = {
             ...surveyData.ratings,
             roomNumber: formData.get('roomNumber'),
-            roomRent: formData.get('roomRent'),
             amountPaid: formData.get('amountPaid'),
-            paymentType: formData.get('paymentType'),
-            extraCharges: formData.get('extraCharges'),
             suggestions: formData.get('suggestions'),
             timestamp: new Date().toISOString()
         };
