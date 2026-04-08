@@ -14,8 +14,8 @@ export default async function handler(req, res) {
                 suggestions, timestamp
             ) VALUES (
                 ${s.cleanliness}, ${s.hygiene}, ${s.managerBehaviour}, ${s.roomBoyBehaviour},
-                ${s.roomNumber}, ${s.roomRent}, ${s.amountPaid}, ${s.paymentType}, 
-                ${s.extraCharges}, ${s.suggestions}, ${s.timestamp}
+                ${s.roomNumber}, null, ${s.amountPaid}, null, 
+                null, ${s.suggestions}, ${s.timestamp}
             )`;
         return res.status(200).json({ success: true });
     } catch (e) {
